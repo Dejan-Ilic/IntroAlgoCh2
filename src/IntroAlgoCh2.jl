@@ -59,6 +59,71 @@ function mergesort!(A::Array)
     return A
 end
 
+function mergesort_iterative!(A::Array)
+    N = length(A)
+    B = similar(A)
+
+    #sorting
+    for k=1:2:N-1
+        if A[k] <= A[k+1]
+            B[k] = A[k]
+            B[k+1] = A[k+1]
+        else
+            B[k] = A[k+1]
+            B[k+1] = A[k]
+        end
+    end
+    if isodd(N)
+        B[N] = A[N]
+    end
+    A, B = B, A #A is nu gesorteerd (deels) en B is garbage
+
+    #merging
+    mergestep = 2
+    while mergestep < N
+        for start = 1:mergestep*2:N
+            if mergestep >= N - start
+                break #er blijft nog maar een partitie over en die is al gesorteerd
+            end
+
+            p = start  #eerst index rij1
+            q = start + mergestep #eerste index rij2
+            r = min(q + mergestep - 1, N) #laatste index rij2
+
+            i = p
+            j = q
+
+            for k=p:r
+                if A[i] <= A[j]
+                    B[k] = A[i]
+                    i+=1
+                    if i >= q
+                        @views B[k+1:r] = A[j:r]
+                        break
+                    end
+                else
+                    B[k] = A[j]
+                    j+=1
+
+                    if j > r
+                        @views B[k+1:r] =  A[i:q-1]
+                        break
+                    end
+                end
+            end
+            A, B = B, A
+        end
+        mergestep *= 2
+    end
+
+    return A
+end
+
+
+
+
+
+
 function _binarysearch(S_sorted::Vector{Int}, target::Int, low::Int, high::Int)::Union{Nothing, Int}
     if low == high
         return (S_sorted[low] == target ? low : nothing)
@@ -97,7 +162,7 @@ function sumfinder(S::Vector{Int}, x::Int)::Union{Nothing, Tuple{Int, Int}}
 
 end
 
-export insertionsort!, mergesort!, _binarysearch, sumfinder
+export insertionsort!, mergesort!, _binarysearch, sumfinder, mergesort_iterative!
 
 
 end

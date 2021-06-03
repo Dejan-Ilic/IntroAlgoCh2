@@ -33,14 +33,14 @@ for N=amounts
     sort_times[N] = ts
 end
 
-plot(amounts, insertionsort_times, label="insert");
-plot!(amounts, mergesort_times, label="merge")
-plot!(amounts, mergesort_optimized_times, label="merge_optimized")
-plot!(amounts, sort_times, label="std sort")
+plot(amounts[10:end], insertionsort_times[10:end], label="insert");
+plot!(amounts[10:end], mergesort_times[10:end], label="merge")
+plot!(amounts[10:end], mergesort_optimized_times[10:end], label="merge_optimized")
+plot!(amounts[10:end], sort_times[10:end], label="std sort")
 
 
 
-if false 
+if false
 s = 1:100_000 |> collect |> shuffle!
 begin
     GC.gc()

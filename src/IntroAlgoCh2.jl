@@ -1,6 +1,6 @@
 module IntroAlgoCh2
 
-function insertionsort!(A::Array)
+function insertionsort!(A::AbstractArray)
     for j=2:length(A)
         key = A[j]
 
@@ -119,7 +119,62 @@ function mergesort_iterative!(A::Array)
     return A
 end
 
+function mergesort_iterative_optimized!(A::Array)
+    N = length(A)
+    if N <= 64
+        return insertionsort!(A)
+    end
 
+    B = similar(A)
+
+    #sorting
+    sortrange = 1:64:N-64
+    for i=sortrange
+        insertionsort!(@views A[i:i+64])
+    end
+    insertionsort!(@views A[maximum(sortrange)+1:N])
+    #A is nu gesorteerd (deels) en B is garbage
+
+    #merging
+    mergestep = 64
+    while mergestep < N
+        for start = 1:mergestep*2:N
+            if mergestep >= N - start
+                break #er blijft nog maar een partitie over en die is al gesorteerd
+            end
+
+            p = start  #eerst index rij1
+            q = start + mergestep #eerste index rij2
+            r = min(q + mergestep - 1, N) #laatste index rij2
+
+            i = p
+            j = q
+
+            for k=p:r
+                if A[i] <= A[j]
+                    B[k] = A[i]
+                    i+=1
+                    if i >= q
+                        @views B[k+1:r] = A[j:r]
+                        break
+                    end
+                else
+                    B[k] = A[j]
+                    j+=1
+
+                    if j > r
+                        @views B[k+1:r] =  A[i:q-1]
+                        break
+                    end
+                end
+            end
+            A, B = B, A
+        end
+        mergestep *= 2
+    end
+
+    return A
+end
 
 
 
@@ -162,7 +217,7 @@ function sumfinder(S::Vector{Int}, x::Int)::Union{Nothing, Tuple{Int, Int}}
 
 end
 
-export insertionsort!, mergesort!, _binarysearch, sumfinder, mergesort_iterative!
+export insertionsort!, mergesort!, _binarysearch, sumfinder, mergesort_iterative!, mergesort_iterative_optimized!
 
 
 end
